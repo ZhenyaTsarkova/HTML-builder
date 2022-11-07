@@ -6,7 +6,7 @@ const { stdout } = process;
 
 var promise = new Promise(function (resolve, reject) {
    let arr = [];
-   
+
    fs.readdir(__dirname + '/styles',
       { withFileTypes: true },
       (err, files) => {
@@ -15,32 +15,25 @@ var promise = new Promise(function (resolve, reject) {
          else {
             for (const item of files) {
                if (item.isFile() && path.extname(item.name) === '.css') {
-                  fs.readFile(__dirname + '/styles/' + item.name, (err, data) => {
-                     arr.push(data.toString())
-                  });
+                  const input = fs.createReadStream(__dirname + '/styles/' + item.name, 'utf-8');
+
+                  let data = '';
+
+                  input.on('data', chunk => data += chunk);
+                  input.on('end', () => arr.push(data.toString()));
                }
             }
          }
-         return resolve(arr)
+         process.on('exit', () => resolve(arr));
       })
 })
-
-// let text = '';
-//    for (const item of files) {
-//       if (item.isFile() && path.extname(item.name) === '.css') {
-//          fs.readFile(__dirname + '/styles/' + item.name, (err, data) => {
-//             fs.writeFile(__dirname + '/project-dist/bundle.css', text + data, () => {
-//                text = text + data
-//             })
-//          });
-//       }
-//    }
 
 async function processArray() {
 
    let result = await promise;
-   console.log(result)
-   fs.writeFile(__dirname + '/project-dist/bundle.css', result.join(''), () => {
-   })
+   const input = result.join('');
+   fs.writeFile(__dirname + '/project-dist/bundle.css', input, () => {});
+   
+
 }
 processArray();
