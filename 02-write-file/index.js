@@ -15,4 +15,9 @@ stdin.on('data', data => {
 });
 
 process.on('SIGINT', () => process.exit());
-process.on('exit', () => stdout.write('Пока!'));
+process.on('exit', () => {
+   fs.writeFile('./02-write-file/text.txt', text, () => {
+   });
+   stdout.write('Пока!')
+}
+);
