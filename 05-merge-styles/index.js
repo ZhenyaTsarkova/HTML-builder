@@ -2,7 +2,13 @@ const fs = require('fs');
 const path = require('path');
 const { stdout } = process;
 
-
+fs.access(__dirname + '/project-dist/bundle.css', (err) => {
+   if (err) return
+   else {
+      fs.unlink(__dirname + '/project-dist/bundle.css', () => {})
+      return
+   }
+})
 
 var promise = new Promise(function (resolve, reject) {
    let arr = [];
@@ -20,8 +26,17 @@ var promise = new Promise(function (resolve, reject) {
                   let data = '';
 
                   input.on('data', chunk => data += chunk);
-                  input.on('end', () => arr.push(data.toString()));
+                  input.on('end', () => {
+                     arr.push(data.toString())
+                     if (arr.length > 0) {
+                        fs.appendFile(__dirname + '/project-dist/bundle.css', arr[arr.length - 1], (err) => {
+                           if (err) throw err;
+                        });
+                     }
+                  });
+
                }
+
             }
          }
          process.on('exit', () => resolve(arr));
@@ -29,11 +44,6 @@ var promise = new Promise(function (resolve, reject) {
 })
 
 async function processArray() {
-
-   let result = await promise;
-   const input = result.join('');
-   fs.writeFile(__dirname + '/project-dist/bundle.css', input, () => {});
-   
-
+   await promise;
 }
 processArray();
